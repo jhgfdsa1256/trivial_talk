@@ -1,8 +1,9 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import { viteSingleFile } from 'vite-plugin-singlefile'
 
-export default defineConfig({
-  plugins: [react()],
-  // 상대 경로로 빌드 → 저장소 이름이 무엇이든 GitHub Pages에서 동작
+// `npm run build:single` → dist/index.html 하나로 묶어서 더블클릭으로 열 수 있게 만듭니다.
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), ...(mode === 'single' ? [viteSingleFile()] : [])],
   base: './',
-})
+}))
