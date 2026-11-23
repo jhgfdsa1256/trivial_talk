@@ -3,6 +3,7 @@ import { AttachButtons, AttachList, RecordBar } from './Attachments'
 import SharePreview from './SharePreview'
 import { initKakao } from '../kakao'
 import { useRecorder } from '../lib/useRecorder'
+import { canNativeShare, nativeShare } from '../lib/share'
 
 const MAX_TEXT = 200
 const MAX_WITH_ATTACH = 100
@@ -17,7 +18,8 @@ export default function KakaoSend({ user }) {
 
   useEffect(() => { setKakaoError(initKakao()) }, [])
 
-  const limit = items.length ? MAX_WITH_ATTACH : MAX_TEXT
+  const mobile = canNativeShare()
+  const limit = mobile ? Infinity : items.length ? MAX_WITH_ATTACH : MAX_TEXT
   const tooLong = text.length > limit
   const canSend = (text.trim() || items.length) && !tooLong
 
@@ -26,6 +28,20 @@ export default function KakaoSend({ user }) {
   const send = async (e) => {
     e.preventDefault()
     if (!canSend) return
+
+    // 휴대폰: 기본 공유 창 → 카카오톡 선택 → 링크 없이 메시지/첨부 그대로 전송
+    if (mobile) {
+      try {
+        const r = await nativeShare({ text, items })
+        if (r === 'cancelled') return
+        if (r?.partial) alert('이 휴대폰은 파일 공유를 지원하지 않아 글만 보냈어요.')
+        clean()
+      } catch (err) {
+        alert('공유 실패: ' + err.message)
+      }
+      return
+    }
+
     const onlySimple = items.every((a) => a.kind === 'image') && items.length <= 1
     if (!kakaoError && onlySimple) {
       // 실제 카카오 전송 (키가 있을 때)
@@ -49,11 +65,17 @@ export default function KakaoSend({ user }) {
 
   return (
     <form className="card" onSubmit={send}>
-      {kakaoError && <div className="notice">데모 모드: 실제로 보내지 않고, 카톡에 도착하는 모습을 미리 보여줘요.</div>}
+      {mobile ? (
+        <div className="notice">카톡 전송을 누르고 공유 창에서 <b>카카오톡</b>을 고르면, 링크 없이 메시지와 첨부 파일이 그대로 보내져요.</div>
+      ) : kakaoError ? (
+        <div className="notice">데모 모드: 실제로 보내지 않고, 카톡에 도착하는 모습을 미리 보여줘요.</div>
+      ) : (
+        <div className="notice">PC에서는 카카오 공유 방식이라 메시지에 버튼이 붙어요. 링크 없이 보내려면 휴대폰에서 이용해 주세요.</div>
+      )}
       <p className="hello"><b>{user.name}</b>님, 보낼 메시지를 써 주세요.</p>
       <label className="label" htmlFor="kmsg">메시지</label>
-      <textarea id="kmsg" rows={4} placeholder={`한 번에 ${MAX_TEXT}자까지 (첨부 시 ${MAX_WITH_ATTACH}자)`} value={text} onChange={(e) => setText(e.target.value)} />
-      <div className={'counter' + (tooLong ? ' over' : '')}>{text.length} / {limit}</div>
+      <textarea id="kmsg" rows={4} placeholder={mobile ? '보낼 메시지' : `한 번에 ${MAX_TEXT}자까지 (첨부 시 ${MAX_WITH_ATTACH}자)`} value={text} onChange={(e) => setText(e.target.value)} />
+      {!mobile && <div className={'counter' + (tooLong ? ' over' : '')}>{text.length} / {limit}</div>}
 
       <RecordBar recorder={recorder} onDone={(v) => setItems((x) => [...x, v])} />
       <AttachList items={items} onRemove={(i) => setItems((x) => x.filter((_, j) => j !== i))} />

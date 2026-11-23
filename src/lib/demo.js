@@ -3,6 +3,11 @@ import { demoImage } from './media'
 export const DEMO_PASSWORD = '1212'
 export const ME = { id: 'me', name: '민준' }
 
+// 로그인한 사람(나)의 이름/사진을 채팅 화면에 반영
+export function setMe(user) {
+  PEOPLE.me = { ...PEOPLE.me, name: user.name, image: user.image || '' }
+}
+
 export const PEOPLE = {
   me: { name: '민준', color: '#c9b8a8' },
   jisu: { name: '지수', color: '#e7a59b' },

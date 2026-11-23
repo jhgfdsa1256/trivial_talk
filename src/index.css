@@ -198,3 +198,6 @@ li + li .room { border-top: 1px solid var(--border); }
 .link-img { width: 100%; border-radius: 10px; display: block; }
 .dl { width: 100%; padding: 12px; }
 .expire { font-size: .78rem; color: var(--muted); margin-top: 14px; line-height: 1.5; }
+img.avatar { object-fit: cover; }
+.error.center { text-align: center; margin-top: 10px; }
+.notice b { color: var(--text); }

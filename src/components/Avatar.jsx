@@ -2,11 +2,9 @@ import { PEOPLE } from '../lib/demo'
 
 export default function Avatar({ id, size = 34 }) {
   const p = PEOPLE[id] || { name: '?', color: '#bbb' }
-  return (
-    <div className="avatar" style={{ width: size, height: size, background: p.color, fontSize: size * 0.4 }}>
-      {p.name[0]}
-    </div>
-  )
+  const style = { width: size, height: size, background: p.color, fontSize: size * 0.4 }
+  if (p.image) return <img className="avatar" src={p.image} alt={p.name} style={style} referrerPolicy="no-referrer" />
+  return <div className="avatar" style={style}>{p.name[0]}</div>
 }
 
 export function GroupAvatar({ ids, size = 46 }) {

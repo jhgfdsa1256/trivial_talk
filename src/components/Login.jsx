@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { TalkLogo, KakaoBubble } from '../lib/icons'
 import { DEMO_PASSWORD } from '../lib/demo'
 import { KAKAO_JS_KEY } from '../config'
+import { login as kakaoLogin } from '../lib/kakaoAuth'
 
-export default function Login({ onLogin }) {
+export default function Login({ onLogin, status }) {
   const [pw, setPw] = useState('')
   const [error, setError] = useState('')
 
@@ -24,10 +25,11 @@ export default function Login({ onLogin }) {
         <p className="sub">Trivial Talk</p>
         <p className="desc">PC에 카카오톡을 설치하지 않아도<br />웹에서 메시지, 사진, 음성, 파일을 보낼 수 있어요.</p>
 
-        <button className="kakao-login" disabled={!KAKAO_JS_KEY} title={KAKAO_JS_KEY ? '' : '카카오 키 설정 후 사용 가능'}>
-          <KakaoBubble /> 카카오 로그인
+        <button className="kakao-login" disabled={!KAKAO_JS_KEY || status?.busy} onClick={kakaoLogin}>
+          <KakaoBubble /> {status?.busy ? '로그인 중…' : '카카오 로그인'}
         </button>
         {!KAKAO_JS_KEY && <p className="hint">카카오 키를 설정하면 사용할 수 있어요.</p>}
+        {status?.error && <p className="error center">{status.error}</p>}
 
         <div className="divider"><span>또는 데모로 체험하기</span></div>
 
